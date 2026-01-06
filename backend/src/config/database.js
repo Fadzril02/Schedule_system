@@ -1,88 +1,47 @@
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise'); // We use the promise version for async/await
 require('dotenv').config();
 
-//databse connection config
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3308'),
-    user: process.env.DB_USER || 'root',
+// 1. Create the Connection Pool
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'schedule_management',
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 4000,
+    ssl: {
+        rejectUnauthorized: false
+    },
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    acquireTimeout: 60000,
-    timeout: 60000,
-    reconnect: true,
-    multipleStatements: true,
-    ssl: false
-};
+    
+    // 🚨 ADD THESE 2 LINES TO FIX "ECONNRESET" 🚨
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+});
 
-// create connection pool
-const pool = mysql.createPool(dbConfig);
-
-// Test database connection
-const testConnection = async () => {
+// 2. Test the Connection on Startup
+(async () => {
     try {
         const connection = await pool.getConnection();
-        const [rows] = await connection.execute('SELECT 1 as test, NOW() as server_time');
+        console.log('✅ TiDB Cloud Connected Successfully!');
         connection.release();
-        console.log('✅ Database connected successfully');
-        return true;
     } catch (error) {
-        console.error('❌ Database connection failed:', error.message);
-        return false;
+        console.error('❌ Database Connection Failed:', error.message);
     }
-};
+})();
 
-// Execute stored procedure helper
-const executeStoredProcedure = async (procedureName, params = []) => {
+// 3. Helper Function (Matches your Controller)
+// This lets you keep using "db.executeQuery()" in your controllers
+async function executeQuery(sql, params) {
     try {
-        const connection = await pool.getConnection();
-        
-        // Build the CALL statement with proper parameter placeholders, parameters with ,
-        const placeholders = params.length > 0 ? params.map(() => '?').join(', ') : '';
-        const query = `CALL ${procedureName}(${placeholders})`;
-        
-        console.log(`🔧 Executing procedure: ${procedureName}`, params);
-        
-        const [rows] = await connection.execute(query, params);
-        connection.release();
-        
-        return rows;
+        const [results] = await pool.execute(sql, params);
+        return results;
     } catch (error) {
-        console.error(`❌ Error executing procedure ${procedureName}:`, error.message);
-        throw error;
+        console.error("Database Query Error:", error.message);
+        throw error; // Pass error back to controller
     }
-};
+}
 
-// Execute regular query helper
-const executeQuery = async (query, params = []) => {
-    try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.execute(query, params);
-        connection.release();
-        return rows;
-    } catch (error) {
-        console.error('❌ Error executing query:', error.message);
-        throw error;
-    }
-};
-
-// Close all connections (for graceful shutdown)
-const closePool = async () => {
-    try {
-        await pool.end();
-        console.log('🔒 Database pool closed');
-    } catch (error) {
-        console.error('❌ Error closing database pool:', error.message);
-    }
-};
-
-module.exports = {
-    pool,
-    testConnection,
-    executeStoredProcedure,
-    executeQuery,
-    closePool
-};
+// Export it so your controllers can use it
+module.exports = { executeQuery, pool };

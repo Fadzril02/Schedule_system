@@ -6,6 +6,7 @@ const { testConnection, executeStoredProcedure, executeQuery, closePool } = requ
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/routes');
+const taskSchedulingRoutes = require('./src/routes/taskSchedulingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -59,7 +60,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api/task-scheduling', taskSchedulingRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -187,5 +188,6 @@ process.on('SIGTERM', () => {
     console.log('\n🛑 Received SIGTERM. Gracefully shutting down...');
     process.exit(0);
 });
+
 
 startServer();
