@@ -132,8 +132,7 @@ const AdminDashboard = () => {
                 <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{time}</span>
                 <br/> 
                 <span style={{ fontSize: '11px', color: '#95a5a6', textTransform: 'uppercase' }}>
-                   {/* Only shows Junior or Senior Session */}
-                   {time === '09:40' ? 'Junior Session' : 'Senior Session'}
+               
                 </span>
               </div>
 
