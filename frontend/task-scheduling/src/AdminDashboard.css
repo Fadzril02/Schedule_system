@@ -1,0 +1,246 @@
+/* --- RESET & BASICS --- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f4f6f9; /* Light Grey background (like paper) */
+  font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif; /* Clean, standard fonts */
+  color: #333;
+}
+
+/* --- SIDEBAR (School Admin Look) --- */
+.sidebar {
+  width: 260px;
+  background-color: #2c3e50; /* Dark Navy Blue - Professional */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1a252f;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  padding: 25px;
+  background-color: #1a252f; /* Slightly darker logo area */
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #34495e;
+}
+
+.nav-item {
+  padding: 18px 25px;
+  cursor: pointer;
+  font-size: 15px;
+  border-bottom: 1px solid #34495e; /* Separator lines */
+  transition: all 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #34495e;
+  padding-left: 30px; /* Slight slide effect */
+}
+
+.nav-item.active {
+  background-color: #3498db; /* Active Bright Blue */
+  color: white;
+  font-weight: 600;
+}
+
+.nav-item.bottom {
+  margin-top: auto;
+  border-top: 1px solid #34495e;
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+/* Header Section */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border: 1px solid #ddd;
+}
+
+.top-bar h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #2c3e50;
+}
+
+.subtitle {
+  margin: 5px 0 0 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar-circle {
+  width: 45px;
+  height: 45px;
+  background-color: #3498db;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* Buttons (Standardized) */
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.btn-auto, .btn-publish {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-auto {
+  background-color: #2980b9; /* Strong Blue */
+  color: white;
+  margin-right: 15px;
+}
+.btn-auto:hover { background-color: #1f618d; }
+
+.btn-publish {
+  background-color: #27ae60; /* Success Green */
+  color: white;
+}
+.btn-publish:hover { background-color: #219150; }
+
+/* --- THE TIMETABLE GRID (The Important Part) --- */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr); /* Time column + 5 Days */
+  background: white;
+  border: 1px solid #bdc3c7; /* Outer border */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Header Cells (Days) */
+.grid-header {
+  background-color: #ecf0f1; /* Light Grey Header */
+  color: #2c3e50;
+  font-weight: 700;
+  text-align: center;
+  padding: 15px;
+  border-bottom: 2px solid #bdc3c7; /* Strong line under days */
+  border-right: 1px solid #ecf0f1;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+/* Time Column */
+.time-label {
+  background-color: #f9f9f9;
+  color: #7f8c8d;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #bdc3c7;
+  border-right: 2px solid #bdc3c7; /* Divider line between time and content */
+  font-size: 13px;
+}
+
+/* The Boxes */
+.grid-cell {
+  background-color: white;
+  border-bottom: 1px solid #ecf0f1; /* Light lines inside */
+  border-right: 1px solid #ecf0f1;
+  min-height: 100px;
+  padding: 8px;
+  transition: background 0.2s;
+}
+
+.grid-cell:hover {
+  background-color: #fcfcfc;
+}
+
+/* Duty Cards (The "Sticky Note" look) */
+.duty-card {
+  background-color: #d6eaf8; /* Very light blue */
+  border-left: 4px solid #3498db; /* Blue accent bar on left */
+  color: #2c3e50;
+  padding: 8px;
+  border-radius: 2px;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.duty-card strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.duty-card.completed {
+  background-color: #d5f5e3; /* Light green */
+  border-left-color: #27ae60;
+}
+
+/* Empty State */
+.empty-slot {
+  color: #bdc3c7; /* Light grey text */
+  font-style: italic;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 35px;
+}
+
+
+/* Visual Style for Senior Tasks (Heavy) */
+.heavy-duty {
+  border-left: 4px solid #e67e22; /* Orange */
+  background-color: #fdf2e9;
+}
+
+/* Visual Style for Junior Tasks (Light) */
+.light-duty {
+  border-left: 4px solid #3498db; /* Blue */
+  background-color: #ebf5fb;
+}
+
+/* Ensure the grid looks like a table */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr); /* Time Col + 5 Days */
+  border: 1px solid #ddd;
+}

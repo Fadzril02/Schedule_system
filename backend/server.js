@@ -18,7 +18,7 @@ app.use(helmet({
 
 // CORS configuration for frontend
 app.use(cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+    origin: ['http://localhost:5173'|| 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -188,6 +188,8 @@ process.on('SIGTERM', () => {
     console.log('\n🛑 Received SIGTERM. Gracefully shutting down...');
     process.exit(0);
 });
+
+
 
 
 startServer();
