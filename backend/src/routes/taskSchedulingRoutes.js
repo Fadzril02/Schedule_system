@@ -13,74 +13,59 @@ router.get('/', async (req, res) => {
 });
 
 // 2. POST Route: The "Auto-Assign" Logic (Now in JavaScript!)
+// 2. POST Route: The "Auto-Assign" Logic (Fixed: Random Roster)
 router.post('/auto-assign', async (req, res) => {
     try {
-        // Step A: Clear old pending schedules to avoid duplicates
-        await executeQuery("DELETE FROM schedule_management.task_schedule WHERE status = 'Pending'");
+        // Step A: Clear old pending schedules
+        await executeQuery("DELETE FROM task_schedule WHERE status = 'Pending'");
+
         // Step B: Get all students
         const students = await executeQuery("SELECT id, name, standard FROM users");
 
-        // Step C: Define the Tasks & Time Rules
-        const juniorTasks = ['Cleaning/Tidying PSS', 'Counter Duty'];
-        const seniorTasks = ['Key in Books', 'Process Books', 'Cleaning PSS'];
+        // Step C: Separate Juniors (Std 2-3) and Seniors (Std 4-6)
+        // We shuffle them immediately so it's random every time
+        const shuffle = (array) => array.sort(() => Math.random() - 0.5);
         
-        // Helper to pick a random item
-        const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const juniors = shuffle(students.filter(s => s.standard <= 3));
+        const seniors = shuffle(students.filter(s => s.standard >= 4));
 
-        // Step D: Calculate dates for this week (Monday to Thursday)
+        // Step D: Define Tasks
+        const juniorTasks = ['Cleaning PSS', 'Counter Duty', 'Tidying Books'];
+        const seniorTasks = ['Key in Books', 'Process Books', 'Cleaning PSS', 'System Check'];
+        const pickTask = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        // Step E: Loop through Mon(0) to Thu(3)
         const today = new Date();
-        const currentDay = today.getDay(); // 0=Sun, 1=Mon...
-        const distanceToMon = 1 - currentDay; // How far back/forward is Monday?
+        const currentDay = today.getDay(); 
+        const distanceToMon = 1 - currentDay;
         
         let assignments = [];
+        let juniorIndex = 0; // Track which Junior we are using
+        let seniorIndex = 0; // Track which Senior we are using
 
-        // Loop through Mon(0) to Thu(3)
         for (let i = 0; i < 4; i++) {
-            // Create the date object for this specific day
+            // 1. Calculate Date
             let dutyDate = new Date(today);
             dutyDate.setDate(today.getDate() + distanceToMon + i);
-            let dateString = dutyDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-            
-            // Get Day Name (Monday, Tuesday...)
+            let dateString = dutyDate.toISOString().split('T')[0];
             let dayName = dutyDate.toLocaleDateString('en-US', { weekday: 'long' });
 
-            // Assign every student for this day
-            students.forEach(student => {
-                let startTime, endTime, task, type;
+            // 2. Assign ONE Junior for this day (if available)
+            if (juniorIndex < juniors.length) {
+                const s = juniors[juniorIndex];
+                assignments.push(`(${s.id}, "${s.name}", "${dateString}", "${dayName}", "09:40:00", "10:00:00", "${pickTask(juniorTasks)}", "Light Duty", "Pending")`);
+                juniorIndex++; // Move to next student
+            }
 
-                // === LOGIC RULES ===
-                if (student.standard == 2 || student.standard == 3) {
-                    // JUNIORS (Std 2-3)
-                    startTime = '09:40:00';
-                    endTime = '10:00:00';
-                    task = pickRandom(juniorTasks);
-                    type = 'Light Duty';
-                } else if (student.standard >= 4) {
-                    // SENIORS (Std 4-6)
-                    startTime = '10:00:00';
-                    endTime = '10:30:00';
-                    task = pickRandom(seniorTasks);
-                    type = 'Heavy Duty';
-                }
-
-                if (startTime) {
-                    // Add query to the list (We use a safe parameterized query style string)
-                    assignments.push(`(
-                        ${student.id}, 
-                        "${student.name}", 
-                        "${dateString}", 
-                        "${dayName}", 
-                        "${startTime}", 
-                        "${endTime}", 
-                        "${task}", 
-                        "${type}", 
-                        "Pending"
-                    )`);
-                }
-            });
+            // 3. Assign ONE Senior for this day (if available)
+            if (seniorIndex < seniors.length) {
+                const s = seniors[seniorIndex];
+                assignments.push(`(${s.id}, "${s.name}", "${dateString}", "${dayName}", "10:00:00", "10:30:00", "${pickTask(seniorTasks)}", "Heavy Duty", "Pending")`);
+                seniorIndex++; // Move to next student
+            }
         }
 
-        // Step E: Save to Database (Bulk Insert)
+        // Step F: Save to Database
         if (assignments.length > 0) {
             const sql = `
                 INSERT INTO task_schedule 
@@ -92,7 +77,7 @@ router.post('/auto-assign', async (req, res) => {
 
         res.json({ 
             success: true, 
-            message: "Auto-Assignment Complete! Junior & Senior schedules generated." 
+            message: "Roster generated! Unique students assigned for each day." 
         });
 
     } catch (error) {

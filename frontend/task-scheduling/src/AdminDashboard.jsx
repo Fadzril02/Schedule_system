@@ -113,7 +113,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* --- THE SCHEDULE GRID --- */}
-        <div className="schedule-grid">
+   <div className="schedule-grid">
           
           {/* 1. Header Row (The Days) */}
           <div className="grid-header" style={{ background: '#ecf0f1' }}>Time</div>
@@ -127,11 +127,13 @@ const AdminDashboard = () => {
           {times.map((time) => (
             <React.Fragment key={time}>
               
-              {/* The Time Column */}
+              {/* The Time Column - CLEAN DISPLAY */}
               <div className="time-label">
-                {time} <br/> 
-                <span style={{fontSize: '10px', color: '#95a5a6'}}>
-                   {time === '09:40' ? 'Standard 2-3' : 'Standard 4-6'}
+                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{time}</span>
+                <br/> 
+                <span style={{ fontSize: '11px', color: '#95a5a6', textTransform: 'uppercase' }}>
+                   {/* Only shows Junior or Senior Session */}
+                   {time === '09:40' ? 'Junior Session' : 'Senior Session'}
                 </span>
               </div>
 
@@ -151,7 +153,7 @@ const AdminDashboard = () => {
                           {task.duty_name}
                         </div>
 
-                        {/* Status/Type Badge */}
+                        {/* CLEAN BADGE: Only Junior or Senior */}
                         <div style={{ marginTop: '8px' }}>
                             <span style={{ 
                                 fontSize: '10px', 
