@@ -2,18 +2,25 @@ const express = require('express');
 const router = express.Router();
 const { executeQuery } = require('../config/database');
 
-// 1. GET Route: Fetch the schedule to show on screen
+// 1. GET Route: Fetch schedule AND Class Name (The JOIN Fix)
 router.get('/', async (req, res) => {
     try {
-        const result = await executeQuery('SELECT * FROM task_schedule ORDER BY task_date, start_time');
+        // We link task_schedule (t) with users (u) using the student ID
+        // This lets us grab 'u.class_name' even though it's not in the task table
+        const sql = `
+            SELECT t.*, u.class_name 
+            FROM task_schedule t
+            JOIN users u ON t.student_id = u.id
+            ORDER BY t.task_date, t.start_time
+        `;
+        const result = await executeQuery(sql);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// 2. POST Route: The "Auto-Assign" Logic (Now in JavaScript!)
-// 2. POST Route: The "Auto-Assign" Logic (Fixed: Random Roster)
+// 2. POST Route: The "Auto-Assign" Logic (Random Roster)
 router.post('/auto-assign', async (req, res) => {
     try {
         // Step A: Clear old pending schedules
@@ -22,8 +29,7 @@ router.post('/auto-assign', async (req, res) => {
         // Step B: Get all students
         const students = await executeQuery("SELECT id, name, standard FROM users");
 
-        // Step C: Separate Juniors (Std 2-3) and Seniors (Std 4-6)
-        // We shuffle them immediately so it's random every time
+        // Step C: Shuffle Function
         const shuffle = (array) => array.sort(() => Math.random() - 0.5);
         
         const juniors = shuffle(students.filter(s => s.standard <= 3));
@@ -40,28 +46,27 @@ router.post('/auto-assign', async (req, res) => {
         const distanceToMon = 1 - currentDay;
         
         let assignments = [];
-        let juniorIndex = 0; // Track which Junior we are using
-        let seniorIndex = 0; // Track which Senior we are using
+        let juniorIndex = 0; 
+        let seniorIndex = 0; 
 
         for (let i = 0; i < 4; i++) {
-            // 1. Calculate Date
             let dutyDate = new Date(today);
             dutyDate.setDate(today.getDate() + distanceToMon + i);
             let dateString = dutyDate.toISOString().split('T')[0];
             let dayName = dutyDate.toLocaleDateString('en-US', { weekday: 'long' });
 
-            // 2. Assign ONE Junior for this day (if available)
+            // Assign Junior
             if (juniorIndex < juniors.length) {
                 const s = juniors[juniorIndex];
                 assignments.push(`(${s.id}, "${s.name}", "${dateString}", "${dayName}", "09:40:00", "10:00:00", "${pickTask(juniorTasks)}", "Light Duty", "Pending")`);
-                juniorIndex++; // Move to next student
+                juniorIndex++;
             }
 
-            // 3. Assign ONE Senior for this day (if available)
+            // Assign Senior
             if (seniorIndex < seniors.length) {
                 const s = seniors[seniorIndex];
                 assignments.push(`(${s.id}, "${s.name}", "${dateString}", "${dayName}", "10:00:00", "10:30:00", "${pickTask(seniorTasks)}", "Heavy Duty", "Pending")`);
-                seniorIndex++; // Move to next student
+                seniorIndex++;
             }
         }
 
@@ -75,10 +80,7 @@ router.post('/auto-assign', async (req, res) => {
             await executeQuery(sql);
         }
 
-        res.json({ 
-            success: true, 
-            message: "Roster generated! Unique students assigned for each day." 
-        });
+        res.json({ success: true, message: "Roster generated successfully!" });
 
     } catch (error) {
         console.error("Auto-Assign Error:", error);

@@ -144,28 +144,24 @@ const AdminDashboard = () => {
                   <div key={`${day}-${time}`} className="grid-cell">
                     {task ? (
                       <div className={`duty-card ${task.task_type === 'Heavy Duty' ? 'heavy-duty' : 'light-duty'}`}>
-                        {/* Student Name */}
-                        <strong>{task.student_name}</strong>
                         
-                        {/* Task Name */}
-                        <div style={{ fontSize: '12px', marginTop: '4px', color: '#555' }}>
+                        {/* 1. Header: Name & Class Name */}
+                        <div className="student-header">
+                          <span className="student-name">
+                             {task.student_name.split(' ')[0]} {/* First Name Only */}
+                          </span>
+                          
+                          {/* BADGE: Shows Actual Class (e.g., 5 Bestari) */}
+                          <span className="student-class">
+                             {task.class_name || 'N/A'}
+                          </span>
+                        </div>
+                        
+                        {/* 2. The Main Focus: THE TASK (Bold) */}
+                        <div className="task-main">
                           {task.duty_name}
                         </div>
 
-                        {/* CLEAN BADGE: Only Junior or Senior */}
-                        <div style={{ marginTop: '8px' }}>
-                            <span style={{ 
-                                fontSize: '10px', 
-                                background: task.task_type === 'Heavy Duty' ? '#e67e22' : '#3498db',
-                                color: 'white', 
-                                padding: '3px 8px', 
-                                borderRadius: '10px',
-                                textTransform: 'uppercase',
-                                fontWeight: 'bold'
-                            }}>
-                                {task.task_type === 'Heavy Duty' ? 'Senior' : 'Junior'}
-                            </span>
-                        </div>
                       </div>
                     ) : (
                       <div className="empty-slot">--</div>
