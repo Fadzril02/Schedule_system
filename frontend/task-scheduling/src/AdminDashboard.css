@@ -1,4 +1,6 @@
-/* --- RESET & BASICS --- */
+/* =========================================
+   1. GLOBAL RESET & LAYOUT
+   ========================================= */
 * {
   box-sizing: border-box;
 }
@@ -12,26 +14,29 @@ body {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #f4f6f9; /* Light Grey background (like paper) */
-  font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif; /* Clean, standard fonts */
+  background-color: #f4f6f9; /* Light Grey background */
+  font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
   color: #333;
 }
 
-/* --- SIDEBAR (School Admin Look) --- */
+/* =========================================
+   2. SIDEBAR (School Admin Look)
+   ========================================= */
 .sidebar {
   width: 260px;
-  background-color: #2c3e50; /* Dark Navy Blue - Professional */
+  background-color: #2c3e50; /* Dark Navy Blue */
   color: white;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #1a252f;
+  flex-shrink: 0;
 }
 
 .logo {
   font-size: 22px;
   font-weight: bold;
   padding: 25px;
-  background-color: #1a252f; /* Slightly darker logo area */
+  background-color: #1a252f;
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -42,17 +47,17 @@ body {
   padding: 18px 25px;
   cursor: pointer;
   font-size: 15px;
-  border-bottom: 1px solid #34495e; /* Separator lines */
+  border-bottom: 1px solid #34495e;
   transition: all 0.2s;
 }
 
 .nav-item:hover {
   background-color: #34495e;
-  padding-left: 30px; /* Slight slide effect */
+  padding-left: 30px; /* Slide effect */
 }
 
 .nav-item.active {
-  background-color: #3498db; /* Active Bright Blue */
+  background-color: #3498db;
   color: white;
   font-weight: 600;
 }
@@ -60,13 +65,17 @@ body {
 .nav-item.bottom {
   margin-top: auto;
   border-top: 1px solid #34495e;
+  background-color: #c0392b; /* Red for Logout */
 }
+.nav-item.bottom:hover { background-color: #e74c3c; }
 
-/* --- MAIN CONTENT --- */
+/* =========================================
+   3. MAIN CONTENT AREA
+   ========================================= */
 .main-content {
   flex: 1;
   padding: 40px;
-  overflow-y: auto;
+  overflow-y: auto; /* Allows scrolling */
 }
 
 /* Header Section */
@@ -82,258 +91,191 @@ body {
   border: 1px solid #ddd;
 }
 
-.top-bar h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #2c3e50;
-}
-
-.subtitle {
-  margin: 5px 0 0 0;
-  color: #7f8c8d;
-  font-size: 14px;
-}
+.top-bar h1 { margin: 0; font-size: 24px; color: #2c3e50; }
+.subtitle { margin: 5px 0 0 0; color: #7f8c8d; font-size: 14px; }
 
 .user-profile {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  display: flex; align-items: center; gap: 15px;
 }
 
 .avatar-circle {
-  width: 45px;
-  height: 45px;
+  width: 45px; height: 45px;
   background-color: #3498db;
   color: white;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 18px;
 }
 
-/* Buttons (Standardized) */
+/* =========================================
+   4. ACTION BAR (Restored Layout)
+   ========================================= */
 .actions-bar {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-.btn-auto, .btn-publish {
+.btn-group {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-auto, .btn-publish, .btn-reset {
   padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
-  transition: background 0.2s;
+  transition: transform 0.1s, box-shadow 0.1s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-auto {
-  background-color: #2980b9; /* Strong Blue */
   color: white;
-  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.btn-auto:hover { background-color: #1f618d; }
 
-.btn-publish {
-  background-color: #27ae60; /* Success Green */
-  color: white;
+.btn-auto { background-color: #2980b9; } 
+.btn-auto:hover { background-color: #1f618d; transform: translateY(-2px); }
+
+.btn-publish { background-color: #27ae60; } 
+.btn-publish:hover { background-color: #219150; transform: translateY(-2px); }
+
+.btn-reset { background-color: #e74c3c; } 
+.btn-reset:hover { background-color: #c0392b; transform: translateY(-2px); }
+
+/* =========================================
+   5. SPLIT VIEW SECTIONS
+   ========================================= */
+.section-header {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e0e0;
 }
-.btn-publish:hover { background-color: #219150; }
 
-/* --- THE TIMETABLE GRID (The Important Part) --- */
+.section-header h2 { margin: 0; font-size: 18px; }
+
+/* Live (Green) Section */
+.live-header h2 { color: #27ae60; }
+.live-grid { border-top: 3px solid #27ae60; }
+
+/* Draft (Yellow) Section */
+.draft-header h2 { color: #f39c12; }
+.draft-grid { border-top: 3px dashed #f39c12; background-color: #fffcf5; }
+
+/* =========================================
+   6. THE SCHEDULE GRID
+   ========================================= */
 .schedule-grid {
   display: grid;
-  grid-template-columns: 100px repeat(5, 1fr); /* Time column + 5 Days */
+  grid-template-columns: 100px repeat(5, 1fr); /* Time + 5 Days */
   background: white;
-  border: 1px solid #bdc3c7; /* Outer border */
+  border: 1px solid #bdc3c7;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
 /* Header Cells (Days) */
 .grid-header {
-  background-color: #ecf0f1; /* Light Grey Header */
+  background-color: #ecf0f1;
   color: #2c3e50;
   font-weight: 700;
   text-align: center;
   padding: 15px;
-  border-bottom: 2px solid #bdc3c7; /* Strong line under days */
+  border-bottom: 2px solid #bdc3c7;
   border-right: 1px solid #ecf0f1;
   text-transform: uppercase;
   font-size: 13px;
-  letter-spacing: 0.5px;
 }
 
-/* Time Column */
+/* Time Label (Left Column) */
 .time-label {
   background-color: #f9f9f9;
   color: #7f8c8d;
   font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   border-bottom: 1px solid #bdc3c7;
-  border-right: 2px solid #bdc3c7; /* Divider line between time and content */
+  border-right: 2px solid #bdc3c7;
   font-size: 13px;
 }
 
-/* The Boxes */
+/* The Grid Cells */
 .grid-cell {
   background-color: white;
-  border-bottom: 1px solid #ecf0f1; /* Light lines inside */
+  border-bottom: 1px solid #ecf0f1;
   border-right: 1px solid #ecf0f1;
-  min-height: 100px;
+  min-height: 110px;
   padding: 8px;
-  transition: background 0.2s;
 }
 
-.grid-cell:hover {
-  background-color: #fcfcfc;
+/* FRIDAY BLANK CELL */
+.friday-cell {
+  background-color: #f8f9fa; /* Just slightly grey */
+  /* No stripes, no text, clean look */
 }
 
-/* Duty Cards (The "Sticky Note" look) */
-.duty-card {
-  background-color: #d6eaf8; /* Very light blue */
-  border-left: 4px solid #3498db; /* Blue accent bar on left */
-  color: #2c3e50;
-  padding: 8px;
-  border-radius: 2px;
-  font-size: 13px;
-  margin-bottom: 5px;
-}
-
-.duty-card strong {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 2px;
-}
-
-.duty-card.completed {
-  background-color: #d5f5e3; /* Light green */
-  border-left-color: #27ae60;
-}
-
-/* Empty State */
-.empty-slot {
-  color: #bdc3c7; /* Light grey text */
-  font-style: italic;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 35px;
-}
-
-/* Visual Style for Senior Tasks (Heavy) */
-.heavy-duty {
-  border-left: 4px solid #e67e22; /* Orange */
-  background-color: #fdf2e9;
-}
-
-/* Visual Style for Junior Tasks (Light) */
-.light-duty {
-  border-left: 4px solid #3498db; /* Blue */
-  background-color: #ebf5fb;
-}
-
-/* Ensure the grid looks like a table */
-.schedule-grid {
-  display: grid;
-  grid-template-columns: 100px repeat(5, 1fr); /* Time Col + 5 Days */
-  border: 1px solid #ddd;
-}
-
-/* CLASS BADGE: Dark grey background */
-.student-class {
-  font-size: 10px;
-  background-color: #34495e; /* Dark Grey */
-  color: white;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-/* TASK NAME: Super Bold & Big */
-.task-main {
-  font-size: 14px;       /* Bigger text */
-  font-weight: 900;      /* Maximum Boldness */
-  color: #000000;        /* Pure Black */
-  line-height: 1.2;
-  margin-top: 5px;
-}
-/* --- STATUS STYLES (New vs Old) --- */
-
-/* 1. DRAFT / PENDING (The New Auto-Assigned Stuff) */
-.duty-card.status-pending {
-  background-color: #fff9c4; /* Pale Yellow */
-  border: 2px dashed #fbc02d; /* Dashed Orange Border */
-  position: relative;
-}
-
-/* 2. PUBLISHED (The Existing Schedule) */
-.duty-card.status-published {
-  background-color: #e8f8f5; /* Pale Green */
-  border-left: 4px solid #27ae60; /* Solid Green Bar */
-}
-
-/* Status Badge inside the card */
-.status-badge {
-  font-size: 9px;
-  font-weight: 900;
-  padding: 2px 5px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  display: inline-block;
-  margin-bottom: 5px;
-  float: right;
-}
-
-.badge-pending {
-  background-color: #fbc02d;
-  color: black;
-}
-
-.badge-published {
-  background-color: #27ae60;
-  color: white;
-}
-
-/* --- SPLIT VIEW STYLES --- */
-
-/* Headers for the sections */
-.section-header {
-  margin-top: 20px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #2c3e50;
-}
-
-.section-header p {
-  margin: 5px 0 0 0;
-  font-size: 13px;
-  color: #7f8c8d;
-}
-
-/* Green Header for Live */
-.live-header h2 { color: #27ae60; }
-.live-grid { border-top: 3px solid #27ae60; }
-
-/* Yellow Header for Draft */
-.draft-header h2 { color: #f39c12; }
-.draft-grid { border-top: 3px dashed #f39c12; background-color: #fffcf5; }
-
-/* Empty text styling */
+/* Empty State Text */
 .empty-txt {
   font-size: 12px;
   color: #bdc3c7;
   display: block;
   text-align: center;
-  margin-top: 30px;
+  margin-top: 35px;
+  font-style: italic;
+}
+
+/* =========================================
+   7. DUTY CARDS (The Tasks)
+   ========================================= */
+.duty-card {
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #2c3e50;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.student-header {
+  display: flex; justify-content: space-between; margin-bottom: 4px;
+}
+.student-name { font-weight: bold; font-size: 12px; }
+.student-class { font-size: 10px; background: #34495e; color: white; padding: 2px 5px; border-radius: 4px; }
+.task-main { font-size: 13px; font-weight: 800; color: #000; line-height: 1.2; }
+
+/* --- STATUS VARIANTS --- */
+
+/* 1. PUBLISHED (Confirmed) */
+.status-published {
+  background-color: #e8f8f5;
+  border-left: 4px solid #27ae60;
+}
+
+/* 2. PENDING (Draft) */
+.status-pending {
+  background-color: #fffde7;
+  border: 2px dashed #fbc02d; /* Dashed look for draft */
+  position: relative;
+}
+
+/* Badge for "NEW" */
+.status-badge {
+  font-size: 9px; font-weight: 900;
+  padding: 2px 4px; border-radius: 3px;
+  float: right; margin-left: 5px;
+}
+.badge-pending { background-color: #fbc02d; color: black; }
+
+/* --- EDITABLE INTERACTION --- */
+.editable-card {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  border-left-width: 6px; /* Thickens the bar on hover */
 }
