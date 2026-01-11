@@ -3,15 +3,16 @@ import axios from 'axios';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  // --- 1. STATE MANAGEMENT ---
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Define the grid structure (Rows and Columns)
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const times = ['09:40', '10:00']; // The specific duty slots
+  // Separate data buckets
+  const [publishedTasks, setPublishedTasks] = useState([]);
+  const [pendingTasks, setPendingTasks] = useState([]);
 
-  // --- 2. FETCH DATA (ON LOAD) ---
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const times = ['09:40', '10:00']; 
+
   useEffect(() => {
     fetchSchedules();
   }, []);
@@ -19,159 +20,182 @@ const AdminDashboard = () => {
   const fetchSchedules = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/task-scheduling/");
-      setSchedules(response.data);
+      const allTasks = response.data;
+      setSchedules(allTasks);
+
+      // SPLIT THE DATA HERE
+      setPublishedTasks(allTasks.filter(t => t.status === 'Published'));
+      setPendingTasks(allTasks.filter(t => t.status === 'Pending'));
+      
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching schedules:", error);
+      console.error("Error:", error);
       setLoading(false);
     }
   };
 
-  // --- 3. AUTO-ASSIGN FUNCTION (The Magic Button) ---
+  // --- ACTIONS ---
   const handleAutoAssign = async () => {
     try {
       setLoading(true);
-      // Calls your backend logic
       const response = await axios.post("http://localhost:5000/api/task-scheduling/auto-assign");
-      
-      alert("System Update: " + response.data.message);
-      
-      // Refresh grid immediately to show new assignments
+      alert(response.data.message);
       fetchSchedules();
     } catch (error) {
-      console.error("Auto-Assign failed:", error);
-      alert("Failed to auto-assign duties. Check console for details.");
+      alert("Auto-Assign Failed");
       setLoading(false);
     }
   };
 
-  const handlePublish = () => {
-    alert("Schedule Published! Emails sent to students.");
-    // You can add backend logic here later
+  const handlePublish = async () => {
+    if(!window.confirm("CONFIRM: Replace the Live Schedule with the Drafts?")) return;
+    try {
+      await axios.post('http://localhost:5000/api/task-scheduling/publish');
+      alert("✅ Published!");
+      fetchSchedules(); 
+    } catch (error) {
+      alert("Publish Failed");
+    }
   };
 
-  // --- 4. HELPER: FIND TASK FOR SPECIFIC SLOT ---
-  const getTaskForSlot = (day, timeLabel) => {
-    if (!schedules || schedules.length === 0) return null;
+  const handleClearAll = async () => {
+    if(!window.confirm("WARNING: This will wipe EVERYTHING (Live & Drafts). Continue?")) return;
+    try {
+      await axios.post('http://localhost:5000/api/task-scheduling/clear-all');
+      alert("🗑️ Cleared.");
+      fetchSchedules();
+    } catch (error) {
+      alert("Clear Failed");
+    }
+  }
 
-    return schedules.find((task) => {
-      // Safety Check: Prevent crashes if database data is incomplete
+  // Helper: Filter a specific list (Published or Pending)
+  const getTasks = (sourceList, day, timeLabel) => {
+    return sourceList.filter((task) => {
       if (!task.day_of_week || !task.start_time) return false;
-
-      // Match Day: e.g., "Monday" === "Monday"
-      const isDayMatch = task.day_of_week === day;
-
-      // Match Time: Compare first 5 chars "09:40" === "09:40"
-      const isTimeMatch = task.start_time.substring(0, 5) === timeLabel;
-
-      return isDayMatch && isTimeMatch;
+      return task.day_of_week === day && task.start_time.substring(0, 5) === timeLabel;
     });
   };
 
-  // --- 5. RENDER THE DASHBOARD ---
   return (
     <div className="dashboard-container">
       
-      {/* SIDEBAR NAVIGATION */}
+      {/* SIDEBAR */}
       <div className="sidebar">
         <div className="logo">UTM LIBRARY</div>
         <div className="nav-item active">Dashboard</div>
         <div className="nav-item">Student List</div>
-        <div className="nav-item">Duty Types</div>
-        <div className="nav-item">Reports</div>
-        <div className="nav-item bottom">Settings</div>
+        <div className="nav-item bottom">Logout</div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTENT - SCROLLABLE */}
       <div className="main-content">
         
         {/* Header */}
         <div className="top-bar">
           <div>
             <h1>Admin Dashboard</h1>
-            <p className="subtitle">School Library Management System &bull; Semester 1 2026</p>
+            <p className="subtitle">Manage Duty Roster</p>
           </div>
           <div className="user-profile">
-            <span>Welcome, <strong>Admin Ahmad</strong></span>
+            <span>Admin</span>
             <div className="avatar-circle">A</div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="actions-bar">
-          <div>
+        {/* CONTROLS BAR */}
+        <div className="actions-bar sticky-bar">
+          <div style={{ display: 'flex', gap: '15px' }}>
+             {/* 1. Generate New Draft */}
             <button className="btn-auto" onClick={handleAutoAssign} disabled={loading}>
-              {loading ? "Processing..." : "Auto-Assign Duties"}
+              ⚡ 1. Auto-Assign New Draft
             </button>
-            <button className="btn-publish" onClick={handlePublish}>
-              Publish Schedule
+
+            {/* 2. Push to Live */}
+            <button className="btn-publish" onClick={handlePublish} disabled={pendingTasks.length === 0}>
+              🚀 2. Publish Draft to Live
             </button>
-          </div>
-          <div style={{ color: '#7f8c8d', fontSize: '14px' }}>
-            Current Week: <strong>Week 4</strong>
+
+             {/* 3. Nuke */}
+            <button 
+                onClick={handleClearAll}
+                style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              🗑️ Reset All
+            </button>
           </div>
         </div>
 
-        {/* --- THE SCHEDULE GRID --- */}
-   <div className="schedule-grid">
-          
-          {/* 1. Header Row (The Days) */}
-          <div className="grid-header" style={{ background: '#ecf0f1' }}>Time</div>
-          {days.map((day) => (
-            <div key={day} className="grid-header">
-              {day}
-            </div>
-          ))}
+        {/* === SECTION 1: LIVE SCHEDULE (GREEN) === */}
+        <div className="section-header live-header">
+           <h2>🟢 Live Schedule (What Students See)</h2>
+           <p>This is the currently active roster.</p>
+        </div>
 
-          {/* 2. Data Rows (The Times) */}
+        <div className="schedule-grid live-grid">
+          <div className="grid-header">Time</div>
+          {days.map((day) => <div key={day} className="grid-header">{day}</div>)}
+
           {times.map((time) => (
             <React.Fragment key={time}>
-              
-              {/* The Time Column - CLEAN DISPLAY */}
-              <div className="time-label">
-                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{time}</span>
-                <br/> 
-                <span style={{ fontSize: '11px', color: '#95a5a6', textTransform: 'uppercase' }}>
-               
-                </span>
-              </div>
-
-              {/* The 5 Day Columns for this Time */}
+              <div className="time-label"><span>{time}</span></div>
               {days.map((day) => {
-                const task = getTaskForSlot(day, time);
-                
+                const tasks = getTasks(publishedTasks, day, time);
                 return (
-                  <div key={`${day}-${time}`} className="grid-cell">
-                    {task ? (
-                      <div className={`duty-card ${task.task_type === 'Heavy Duty' ? 'heavy-duty' : 'light-duty'}`}>
-                        
-                        {/* 1. Header: Name & Class Name */}
+                  <div key={`pub-${day}-${time}`} className="grid-cell">
+                    {tasks.length > 0 ? tasks.map((task, i) => (
+                      <div key={i} className="duty-card status-published">
                         <div className="student-header">
-                          <span className="student-name">
-                             {task.student_name.split(' ')[0]} {/* First Name Only */}
-                          </span>
-                          
-                          {/* BADGE: Shows Actual Class (e.g., 5 Bestari) */}
-                          <span className="student-class">
-                             {task.class_name || 'N/A'}
-                          </span>
+                          <span className="student-name">{task.student_name.split(' ')[0]}</span>
+                          <span className="student-class">{task.class_name}</span>
                         </div>
-                        
-                        {/* 2. The Main Focus: THE TASK (Bold) */}
-                        <div className="task-main">
-                          {task.duty_name}
-                        </div>
-
+                        <div className="task-main">{task.duty_name}</div>
                       </div>
-                    ) : (
-                      <div className="empty-slot">--</div>
-                    )}
+                    )) : <span className="empty-txt">- Empty -</span>}
                   </div>
                 );
               })}
             </React.Fragment>
           ))}
         </div>
+
+        <br /><br />
+
+        {/* === SECTION 2: DRAFT SCHEDULE (YELLOW) === */}
+        <div className="section-header draft-header">
+           <h2>🟡 Draft Preview (Pending Approval)</h2>
+           <p>This is the result of your Auto-Assign. Review it here before publishing.</p>
+        </div>
+
+        <div className="schedule-grid draft-grid">
+          <div className="grid-header">Time</div>
+          {days.map((day) => <div key={day} className="grid-header">{day}</div>)}
+
+          {times.map((time) => (
+            <React.Fragment key={time}>
+              <div className="time-label"><span>{time}</span></div>
+              {days.map((day) => {
+                const tasks = getTasks(pendingTasks, day, time);
+                return (
+                  <div key={`dft-${day}-${time}`} className="grid-cell">
+                     {tasks.length > 0 ? tasks.map((task, i) => (
+                      <div key={i} className="duty-card status-pending">
+                         <span className="status-badge badge-pending">NEW</span>
+                        <div className="student-header">
+                          <span className="student-name">{task.student_name.split(' ')[0]}</span>
+                          <span className="student-class">{task.class_name}</span>
+                        </div>
+                        <div className="task-main">{task.duty_name}</div>
+                      </div>
+                    )) : <span className="empty-txt" style={{color:'#f39c12'}}>Waiting for Auto-Assign...</span>}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <div style={{height: '50px'}}></div> {/* Bottom Padding */}
 
       </div>
     </div>
